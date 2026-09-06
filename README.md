@@ -6,6 +6,20 @@ Construir el mapa lógico y/o físico de la infraestructura tecnológica del sis
 
 ---
 
+## ✅ Entrega desarrollada
+
+La aplicación del taller al cliente **EcoRecicla (SIAR)** quedó documentada con trazabilidad entre el mapa, los riesgos y las decisiones de arquitectura:
+
+- [Notas y diagnóstico del caso base RedExpress](clase/notas.md)
+- [Mapa borrador editable de RedExpress](clase/mapa-borrador.drawio)
+- [Mapa final editable de EcoRecicla, con vistas AS-IS y TO-BE](entrega/mapa-final.drawio)
+- [Informe técnico y vista previa del mapa](entrega/informe.md)
+- [Investigación y referencias técnicas](entrega/referencias.md)
+
+El informe distingue la infraestructura observada/documentada de la infraestructura propuesta. Los servicios cloud del mapa TO-BE son patrones tecnológicos neutrales y no se presentan como recursos ya desplegados.
+
+---
+
 ## 📘 Guía paso a paso
 
 Antes de empezar a modelar, revise la [**Guía Paso a Paso: Mapa de Infraestructura y Diagnóstico Técnico**](clase/guia_paso_a_paso_infraestructura.md). Incluye la leyenda de notación, la metodología de 5 pasos (mapa + diagnóstico) que se usa en el taller, un ejemplo completo construido paso a paso sobre el caso de RedExpress con una tabla de diagnóstico priorizado, y una comparación de errores comunes.
@@ -14,7 +28,7 @@ Antes de empezar a modelar, revise la [**Guía Paso a Paso: Mapa de Infraestruct
 
 [`clase/visualizacion-infraestructura.html`](clase/visualizacion-infraestructura.html) es una página interactiva autocontenida: un mapa de infraestructura de RedExpress por zonas (Clientes, Borde/Global, Región Bogotá y Región Medellín) en el que los componentes marcados con ⚠️ (balanceador de carga, base de datos distribuida y API Gateway de Medellín) son clickeables y muestran su categoría de riesgo, impacto y prioridad; además incluye la leyenda de notación, la metodología de 5 pasos, la tabla de diagnóstico priorizado completa, los errores comunes a evitar y la vista ArchiMate equivalente. GitHub no la renderiza interactiva desde la vista de archivo; para verla:
 - Descargue el archivo y ábralo con doble clic (funciona sin conexión, es HTML plano), o
-- Pegue esta URL en [htmlpreview.github.io](https://htmlpreview.github.io/): `https://raw.githubusercontent.com/CesarAVegaF312/AREM-Taller_4_Infraestructura/main/clase/visualizacion-infraestructura.html`
+- Pegue esta URL en [htmlpreview.github.io](https://htmlpreview.github.io/): `https://raw.githubusercontent.com/m4rtin24/AREM-Taller_4_Infraestructura/main/clase/visualizacion-infraestructura.html`
 
 ## 🚚 Caso base de referencia: RedExpress (Plataforma de Logística)
 
