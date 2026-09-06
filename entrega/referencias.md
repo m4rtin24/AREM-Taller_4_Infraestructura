@@ -1,42 +1,36 @@
-# Referencias e investigación técnica — Taller 4
+# Referencias del Taller 4
 
-## Taller
+## Alcance
 
-Taller 4 — Mapa de Infraestructura y Diagnóstico Técnico aplicado a EcoRecicla (SIAR).
+En cumplimiento de la restricción de trabajar únicamente con el contenido del repositorio, esta entrega no utiliza fuentes externas. La investigación complementaria se construyó a partir del caso RedExpress, la guía, la visualización y las plantillas incluidas.
 
-Fecha de consulta de las fuentes web: 6 de septiembre de 2026.
+## Fuentes internas utilizadas
 
-## Pregunta de investigación
+1. [`../README.md`](../README.md) — objetivo del taller, descripción de RedExpress, infraestructura híbrida, componentes esperados, áreas críticas, estructura de la entrega y rúbrica.
+2. [`../clase/guia_paso_a_paso_infraestructura.md`](../clase/guia_paso_a_paso_infraestructura.md) — leyenda de notación, metodología de cinco pasos, mapa progresivo, diagnóstico priorizado, errores comunes, checklist y vista ArchiMate equivalente.
+3. [`../clase/visualizacion-infraestructura.html`](../clase/visualizacion-infraestructura.html) — representación interactiva de las cuatro zonas, los flujos y los riesgos del balanceador, la base de datos y la región Medellín.
+4. [`../plantillas/plantilla_informe_taller.md`](../plantillas/plantilla_informe_taller.md) — estructura del informe.
+5. [`../plantillas/plantilla_notas.md`](../plantillas/plantilla_notas.md) — estructura del registro de clase.
+6. [`../plantillas/plantilla_referencias.md`](../plantillas/plantilla_referencias.md) — estructura del documento de referencias.
 
-¿Qué prácticas de infraestructura permiten que un sistema transaccional de pesajes, trazabilidad de materiales y reportes regulatorios evolucione desde un prototipo de interfaz hacia una operación disponible, escalable y observable?
+## Relación entre fuentes y entrega
 
-## Síntesis
+| Contenido de la entrega | Fuente interna |
+|---|---|
+| Descripción del sistema y temporadas de alto volumen | `README.md` |
+| Zonas Clientes, Borde/Global, Bogotá y Medellín | Guía y visualización interactiva |
+| Inventario de clientes, gateways, rutas, base de datos, balanceador y monitoreo | `README.md` y guía |
+| R1 — punto único de falla del balanceador | Tabla de diagnóstico de la guía |
+| R2 — latencia por escritura única en Bogotá | Tabla de diagnóstico de la guía |
+| R3 — límite de escalabilidad de Medellín | Tabla de diagnóstico de la guía |
+| Propuesta de redundancia y distribución regional | Derivación directa de R1, R2 y R3 |
+| Criterios de autoevaluación | Checklist de la guía y rúbrica del `README.md` |
 
-La primera decisión es separar la entrega estática de la interfaz de los servicios transaccionales. La interfaz puede distribuirse desde almacenamiento de objetos y CDN, mientras las operaciones de pesaje, recicladores, rutas, balance de masas, PQR y generación SUI pasan por una API sin estado. Este desacoplamiento permite replicar el cómputo detrás de un balanceador y escalarlo según demanda. AWS Well-Architected recomienda recuperación automática, pruebas de recuperación y escalamiento horizontal para reducir puntos únicos de falla [1]; Kubernetes documenta que el Horizontal Pod Autoscaler ajusta el número de réplicas usando métricas de recursos o métricas personalizadas [2]. En EcoRecicla estas prácticas se traducen en dos o más instancias de API, al menos dos zonas de disponibilidad y trabajos pesados enviados a una cola.
+## Síntesis de investigación interna
 
-La persistencia exige un tratamiento distinto al cómputo sin estado. PostgreSQL señala que un servidor secundario puede asumir rápidamente si falla el primario y que las decisiones entre replicación síncrona y asíncrona implican compromisos entre consistencia, pérdida potencial y latencia [3]. Por eso el mapa propone una base administrada con primario y standby en zonas diferentes, copias cifradas y recuperación a un punto en el tiempo. El RPO y RTO incluidos en el informe son objetivos iniciales para validar, no garantías actuales.
+El material del taller establece que un mapa de infraestructura debe mostrar componentes, agrupaciones y conexiones, pero también la redundancia de los elementos críticos. Esta última información permite diferenciar un punto único de falla de un cuello de botella y de un límite de escalabilidad.
 
-Finalmente, alta disponibilidad sin observabilidad deja fallas invisibles. OpenTelemetry describe métricas, logs y trazas como señales complementarias, y recomienda indicadores medidos desde la perspectiva del usuario [4]. La propuesta centraliza las tres señales y alerta sobre errores, latencia, saturación, profundidad de cola y fallos de replicación. Estas medidas conectan los controles técnicos con operaciones del negocio como registrar un pesaje o generar un reporte SUI.
-
-## Aplicación de las fuentes al diseño
-
-| Fuente | Práctica extraída | Aplicación en EcoRecicla |
-|---|---|---|
-| [1] AWS Well-Architected | Recuperación automática, pruebas de recuperación, escalamiento horizontal y automatización de cambios. | API replicada en dos zonas, balanceador administrado, infraestructura automatizable y simulacros de restauración. |
-| [2] Kubernetes HPA | Ajuste automático de réplicas con métricas de CPU, memoria o negocio. | Escalar API y workers con demanda, usando solicitudes por segundo y profundidad de cola además de CPU. |
-| [3] PostgreSQL HA | Standby, failover y selección consciente entre replicación síncrona/asíncrona. | Primario + standby, failover probado, PITR y revisión de latencia de escritura. |
-| [4] OpenTelemetry | Instrumentación con métricas, logs y trazas; SLI desde el punto de vista del usuario. | Trazar `registrar pesaje` y `generar SUI`; medir éxito y latencia extremo a extremo. |
-
-## Referencias
-
-1. Amazon Web Services. *AWS Well-Architected Framework — Reliability Pillar: Design principles*. <https://docs.aws.amazon.com/wellarchitected/2024-06-27/framework/rel-dp.html>.
-2. Kubernetes Authors. *Horizontal Pod Autoscaling*. <https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/>.
-3. PostgreSQL Global Development Group. *High Availability, Load Balancing, and Replication*. <https://www.postgresql.org/docs/current/high-availability.html>.
-4. OpenTelemetry Authors. *Observability primer*. <https://opentelemetry.io/docs/concepts/observability-primer/>.
-
-## Criterios de calidad de las fuentes
-
-Se priorizaron documentos oficiales y vigentes de los proyectos o proveedores responsables. No se usaron blogs comerciales secundarios ni Wikipedia. Las fuentes sustentan patrones; no certifican que la infraestructura propuesta ya esté desplegada ni sustituyen la validación de costos, capacidad, seguridad y continuidad con el cliente.
+En RedExpress, los componentes globales pueden afectar a toda la plataforma, mientras los componentes regionales explican dependencias geográficas. La escritura concentrada en Bogotá afecta el rendimiento de otras regiones; la ausencia de un módulo de rutas en Medellín limita el crecimiento regional; y un balanceador único compromete la disponibilidad completa. Por ello la propuesta final corrige cada condición en el mismo nivel donde se origina.
 
 ---
 

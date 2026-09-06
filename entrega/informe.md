@@ -3,338 +3,223 @@
 ## Identificación
 
 - **Taller:** Taller 4 — Mapa de Infraestructura y Diagnóstico Técnico.
-- **Cliente analizado:** EcoRecicla, sistema SIAR para una Estación de Clasificación y Aprovechamiento (ECA).
-- **Integrante:** Martin Ortega (`m4rtin24`).
-- **Fecha:** 6 de septiembre de 2026.
+- **Sistema analizado:** RedExpress, plataforma de logística descrita en el repositorio.
+- **Integrantes:** no especificados en los archivos fuente del repositorio.
 - **Modelo editable:** [`mapa-final.drawio`](mapa-final.drawio).
-- **Caso base:** [`../clase/mapa-borrador.drawio`](../clase/mapa-borrador.drawio) y [`../clase/notas.md`](../clase/notas.md).
+- **Trabajo de clase:** [`../clase/mapa-borrador.drawio`](../clase/mapa-borrador.drawio) y [`../clase/notas.md`](../clase/notas.md).
 
-## Resumen ejecutivo
+## 1. Fuentes y límite del análisis
 
-EcoRecicla cubre procesos operativos y regulatorios sensibles: pesajes, recicladores, rutas, materiales, vehículos, balance de masas, reportes SUI y PQR. El levantamiento disponible describe un prototipo React/Vite con navegación y autenticación simuladas en el cliente, estado en memoria, funciones de API simuladas y datos codificados en la interfaz. El repositorio de este taller no contiene inventario de recursos cloud, configuración de red, infraestructura como código, backend productivo ni mediciones; por tanto, no hay evidencia para afirmar que exista una plataforma de producción redundante.
+Este informe usa exclusivamente el contenido de los siguientes archivos del repositorio:
 
-El diagnóstico identifica cinco brechas principales: ausencia de persistencia transaccional, inexistencia de una API productiva, concentración del procesamiento en el navegador, falta de aislamiento para tareas pesadas y ausencia de telemetría central. También se registra como supuesto por validar la dependencia operativa de cada ECA respecto a Internet y a la báscula. Las prioridades inmediatas son crear una fuente de verdad persistente, desacoplar frontend y backend, y diseñar recuperación y observabilidad antes de pensar en expansión multirregional.
+1. [`../README.md`](../README.md), que define el objetivo, el caso RedExpress, los componentes esperados, las áreas críticas y los entregables.
+2. [`../clase/guia_paso_a_paso_infraestructura.md`](../clase/guia_paso_a_paso_infraestructura.md), que contiene la notación, la metodología, el mapa construido por pasos, el diagnóstico, los errores comunes y la checklist.
+3. [`../clase/visualizacion-infraestructura.html`](../clase/visualizacion-infraestructura.html), que presenta la misma infraestructura y los tres riesgos en una vista interactiva.
+4. Las plantillas de `plantillas/`, usadas únicamente para organizar la entrega.
 
-La arquitectura objetivo propone una solución híbrida y neutral frente al proveedor: dispositivos y básculas permanecen en la ECA; en cloud, la SPA se distribuye por CDN, una API sin estado se replica en al menos dos zonas, los trabajos de reportes y notificaciones se ejecutan mediante cola, PostgreSQL opera con primario/standby y recuperación a un punto en el tiempo, y métricas, logs y trazas alimentan alertas. Este es un diseño propuesto, no un despliegue realizado.
+No se incorporan otros clientes, dominios, tecnologías, proveedores, métricas, integrantes ni fechas. Cuando el informe presenta una mejora, esta se deriva directamente del riesgo descrito por el material del repositorio.
 
-## 1. Alcance, evidencia y límites
+## 2. Descripción general
 
-### Incluido
+RedExpress gestiona paquetes y rastreo de envíos mediante una aplicación móvil y una plataforma web. Su infraestructura es híbrida e incluye servicios en la nube, servidores regionales, centros de distribución físicos y dispositivos móviles utilizados por mensajeros. El sistema debe conservar disponibilidad y rendimiento durante campañas promocionales o temporadas de alto volumen como Navidad.
 
-- Mapa lógico AS-IS del estado documentado.
-- Mapa lógico/físico TO-BE propuesto, con zonas, redundancia y flujos.
-- Diagnóstico de disponibilidad, rendimiento y escalabilidad.
-- Priorización, controles y criterios de verificación.
-- Comparación con el caso base RedExpress.
-- Investigación de buenas prácticas y referencias oficiales.
+El mapa del repositorio organiza la infraestructura en cuatro zonas:
 
-### No incluido
+- **Clientes:** app móvil del usuario, app móvil del mensajero y portal web del operador.
+- **Borde / Global:** balanceador de carga, monitoreo y alertas, y base de datos distribuida.
+- **Región Bogotá:** API Gateway y módulo de procesamiento de rutas y paquetes.
+- **Región Medellín:** API Gateway sin módulo local de procesamiento de rutas.
 
-- Creación de cuentas o recursos cloud.
-- Elección contractual de proveedor o estimación de costos.
-- Migración de datos, implementación de backend o pruebas de penetración.
-- Certificación de RTO, RPO, disponibilidad o capacidad sin mediciones reales.
+## 3. Proceso de desarrollo
 
-### Convenciones de evidencia
+Se aplicaron los cinco pasos definidos en la guía:
 
-| Marca | Significado |
-|---|---|
-| **Documentado** | Característica suministrada en el contexto funcional del sistema. |
-| **Inferido** | Consecuencia técnica razonable del estado documentado; debe comprobarse. |
-| **Propuesto** | Elemento de la arquitectura objetivo; aún no implica implementación. |
-| **Por validar** | Dato operativo que requiere confirmación del cliente o una medición. |
+1. **Identificar componentes:** se tomó el inventario que aparece en el caso y en el ejemplo guiado.
+2. **Agrupar por zona:** se conservaron las cuatro zonas establecidas por la guía.
+3. **Conectar componentes:** se reprodujo el tráfico desde los clientes hasta el balanceador, los gateways, el módulo de rutas, la base de datos y el monitoreo.
+4. **Marcar redundancia y capacidad:** se señalaron el balanceador único, la escritura única en Bogotá y la dependencia de Medellín.
+5. **Diagnosticar y priorizar:** se usaron las categorías y prioridades exactas de la tabla de diagnóstico del repositorio.
 
-## 2. Metodología aplicada
+El archivo final contiene dos páginas: **Estado diagnosticado**, que representa la situación descrita, y **Propuesta de mejora**, que elimina los tres riesgos mediante redundancia y capacidad regional.
 
-1. **Identificación:** se inventariaron usuarios, interfaz, módulos funcionales, estado, capa de acceso a datos e integraciones previstas.
-2. **Agrupación:** el AS-IS se separó en usuarios/ECA, presentación, lógica/datos y externos. El TO-BE se separó en ECA, borde, dos zonas de aplicación, datos, integraciones y operación.
-3. **Conexión:** cada flecha indica un flujo real o propuesto; las líneas punteadas se reservan para telemetría, replicación o respaldos.
-4. **Redundancia/capacidad:** cada componente crítico declara si es único, replicado o administrado; los puntos sin evidencia se marcan como riesgo.
-5. **Diagnóstico:** los identificadores `R1` a `R6` enlazan componentes del mapa, tabla de riesgos y controles.
-
-## 3. Estado actual documentado (AS-IS)
-
-### Vista lógica
+## 4. Mapa del estado diagnosticado
 
 ```mermaid
-flowchart LR
-  subgraph U[Usuarios / ECA]
-    OP([Operador])
-    AD([Administrador])
-    RE([Reciclador])
-    SC[Báscula / captura de peso]
-  end
-  subgraph P[Presentación en el navegador]
-    SPA[React 19 + Vite SPA]
-    CTX[AppContext: sesión, rol, página y modales]
-  end
-  subgraph L[Lógica y datos del prototipo]
-    MOD["R3 · módulos SIAR acoplados al cliente"]
-    API["R1 · services/api.js simulado"]
-    MOCK[("R2 · datos hardcoded / memoria")]
-    JOB["R4 · reportes y operación en el mismo cliente"]
-    OBS["R5 · sin telemetría central"]
-  end
-  subgraph X[Externos]
-    FONT[Google Fonts]
-    SUI[Portal SUI / exportación]
-  end
+flowchart TD
+    subgraph clientes["Clientes"]
+        usuario(["App Móvil - Usuario Final"])
+        mensajero(["App Móvil - Mensajero"])
+        operador(["Portal Web - Operador"])
+    end
 
-  OP --> SPA
-  AD --> SPA
-  RE --> SPA
-  SC --> SPA
-  SPA --> CTX --> MOD --> API --> MOCK
-  MOD --> JOB --> SUI
-  MOD -. ausencia de señales .-> OBS
-  FONT --> SPA
+    subgraph borde["Borde / Global"]
+        lb["R1 · Balanceador de Carga (instancia única)"]
+        monitor["Servicio de Monitoreo y Alertas"]
+        db[("R2 · Base de Datos Distribuida (escritura única - Bogotá)")]
+    end
+
+    subgraph bogota["Región Bogotá"]
+        gwbog["API Gateway - Bogotá"]
+        rutasbog["Módulo de Procesamiento de Rutas y Paquetes - Bogotá"]
+    end
+
+    subgraph medellin["Región Medellín"]
+        gwmed["R3 · API Gateway - Medellín (sin módulo de rutas propio)"]
+    end
+
+    usuario --> lb
+    mensajero --> lb
+    operador --> lb
+    lb --> gwbog
+    lb --> gwmed
+    gwbog --> rutasbog
+    gwmed -->|cuello de botella| rutasbog
+    rutasbog --> db
+    gwbog -.-> monitor
+    gwmed -.-> monitor
 ```
 
-La vista editable correspondiente es la primera página, **AS-IS · EcoRecicla**, de [`mapa-final.drawio`](mapa-final.drawio).
+La primera página de [`mapa-final.drawio`](mapa-final.drawio) contiene esta vista en formato editable.
 
-### Inventario AS-IS
+## 5. Inventario de componentes
 
-| Elemento | Tipo | Estado | Responsabilidad | Redundancia/capacidad conocida |
+| Componente | Tipo de elemento | Zona | Función descrita | Condición relevante |
 |---|---|---|---|---|
-| Navegador de operador/administrador/reciclador | Dispositivo cliente | Documentado | Ejecutar la SPA y mantener estado de sesión. | Depende de cada dispositivo; sin continuidad central documentada. |
-| Báscula o captura manual | Dispositivo ECA | Documentado a nivel funcional | Suministrar el peso de materiales. | Integración física y modo degradado por validar. |
-| React 19 + Vite SPA | Aplicación web | Documentado | Presentación y navegación de los módulos SIAR. | Una unidad lógica de frontend; despliegue real no evidenciado. |
-| AppContext | Componente de aplicación | Documentado | Autenticación simulada, rol, página y modales. | Estado volátil en el navegador. |
-| Módulos SIAR | Componentes de aplicación | Documentado | Pesaje, recicladores, rutas, materiales, vehículos, balance, SUI y PQR. | Ejecutados en el cliente. |
-| `services/api.js` | Servicio simulado | Documentado | Responder con datos ficticios. | No es un backend ni una frontera transaccional real. |
-| Datos hardcoded/memoria | Almacenamiento simulado | Documentado | Alimentar vistas y formularios. | Sin persistencia, réplica, backup ni recuperación. |
-| Google Fonts | Dependencia externa | Documentado | Tipografía de la interfaz. | La carga remota puede degradarse; no debe bloquear la operación. |
-| Portal SUI / notificaciones | Integraciones | Parcialmente documentado | Salida regulatoria y comunicaciones. | Botones/exports sin integración productiva evidenciada. |
+| App móvil — usuario final | Cliente | Clientes | Consultar la operación y el rastreo de envíos. | Punto de entrada. |
+| App móvil — mensajero | Cliente | Clientes | Consultar y actualizar el rastreo durante la operación. | Sensible a la latencia de rastreo. |
+| Portal web — operador | Cliente | Clientes | Operar la plataforma desde la web. | Punto de entrada. |
+| Balanceador de carga | Infraestructura | Borde / Global | Recibir y distribuir el tráfico hacia las regiones. | Instancia única. |
+| API Gateway Bogotá | Servicio | Región Bogotá | Recibir tráfico destinado a Bogotá. | Accede al módulo regional. |
+| API Gateway Medellín | Servicio | Región Medellín | Recibir tráfico destinado a Medellín. | No tiene módulo de rutas propio. |
+| Módulo de rutas y paquetes | Servicio | Región Bogotá | Procesar rutas y estados de paquetes. | Atiende también la dependencia de Medellín. |
+| Base de datos distribuida | Base de datos | Borde / Global | Almacenar la información de la plataforma. | Escritura única en Bogotá. |
+| Monitoreo y alertas | Servicio | Borde / Global | Recibir información de los gateways regionales. | Servicio compartido. |
 
-## 4. Diagnóstico técnico priorizado
+## 6. Diagnóstico técnico priorizado
 
-La prioridad combina impacto y probabilidad cualitativos. Cuando no existen métricas, el hallazgo se denomina **riesgo potencial**, no incidente comprobado.
+| ID | Componente exacto del mapa | Riesgo diagnosticado | Categoría | Impacto si ocurre | Prioridad |
+|---|---|---|---|---|---|
+| R1 | Balanceador de carga (instancia única) | Punto único de falla. | Disponibilidad | Toda la plataforma queda inaccesible. | **Alta** |
+| R2 | Base de datos distribuida (escritura única en Bogotá) | Cuello de botella de latencia. | Rendimiento | Lentitud en el rastreo en tiempo real para mensajeros fuera de Bogotá. | **Alta** |
+| R3 | Región Medellín sin módulo de rutas propio | Límite de escalabilidad geográfica. | Escalabilidad | No se puede atender el crecimiento de demanda en Medellín sin saturar Bogotá. | **Media** |
 
-| ID | Componente del mapa | Hallazgo y evidencia | Categoría | Impacto | Prob. | Prioridad |
-|---|---|---|---|---|---|---|
-| R1 | `services/api.js` simulado | No existe una API productiva documentada que coordine validación, concurrencia, autorización y transacciones. | Disponibilidad | La operación compartida no puede sostenerse de forma confiable ni recuperarse como servicio. | Alta | **Alta** |
-| R2 | Datos hardcoded / memoria del navegador | No existe una fuente persistente de verdad, réplica ni backup documentados. | Disponibilidad | Pérdida o inconsistencia de pesajes, balances, PQR y trazabilidad regulatoria. | Alta | **Alta** |
-| R3 | SPA y lógica concentradas en el cliente | No hay capa de cómputo horizontal documentada; cada función crece dentro de la misma unidad lógica. | Escalabilidad | El crecimiento de estaciones, usuarios y reglas aumenta acoplamiento y dificulta escalar componentes por separado. | Alta | **Alta** |
-| R4 | Pesajes y generación de reportes en el mismo camino | Riesgo potencial de que exportaciones SUI o cálculos agregados compitan con la interacción operativa. No hay pruebas de carga. | Rendimiento | Lentitud o bloqueo perceptible durante cierres y generación de archivos. | Media | **Media** |
-| R5 | Plataforma completa | No hay telemetría central, alertas ni procedimiento de recuperación documentados. | Disponibilidad | Aumentan el tiempo de detección y el tiempo de recuperación; fallas silenciosas pueden afectar datos. | Alta | **Alta** |
-| R6 | Enlace ECA–cloud y báscula | Dependencia física/Internet inferida; no se documenta modo offline, buffer local o captura contingente. | Disponibilidad | Una caída del enlace o periférico puede detener el registro de pesajes en la estación. | Media | **Media** |
+### Relación directa entre mapa y diagnóstico
 
-### Orden recomendado de tratamiento
+- `R1` aparece sobre el balanceador de carga y demuestra que todo el tráfico depende de una única instancia.
+- `R2` aparece sobre la base de datos y demuestra que la escritura se concentra en Bogotá.
+- `R3` aparece sobre el gateway de Medellín; su conexión hacia el módulo de Bogotá muestra la dependencia regional.
 
-1. **R1 + R2:** backend transaccional y persistencia; sin esta base, los demás controles no protegen información real.
-2. **R5:** observabilidad, backup restaurable y procedimientos de recuperación desde el primer ambiente productivo.
-3. **R3:** servicios sin estado replicables y separación de responsabilidades.
-4. **R4:** cola de trabajos y workers para reportes/notificaciones, guiados por mediciones.
-5. **R6:** contingencia local o modo offline, después de validar operación, conectividad y básculas con cada ECA.
+## 7. Propuesta de mejora
 
-## 5. Arquitectura objetivo propuesta (TO-BE)
-
-### Vista de infraestructura
+La propuesta conserva los mismos tipos de componentes del caso y modifica únicamente la redundancia y la distribución regional que originan los riesgos.
 
 ```mermaid
-flowchart LR
-  subgraph ECA[ECA / instalaciones]
-    USERS([Operador · Admin · Reciclador])
-    SCALE[Báscula]
-    CACHE["R6 · contingencia local por validar"]
-  end
-  subgraph EDGE[Borde cloud administrado]
-    DNS[DNS + CDN + WAF]
-    WEB[SPA estática versionada]
-    GW[API Gateway / balanceador multi-AZ]
-    IDP[Identidad OIDC + RBAC]
-  end
-  subgraph AZA[Zona de disponibilidad A]
-    APIA[API EcoRecicla · réplica A]
-    WKA[Worker · réplica A]
-  end
-  subgraph AZB[Zona de disponibilidad B]
-    APIB[API EcoRecicla · réplica B]
-    WKB[Worker · réplica B]
-  end
-  subgraph DATA[Datos administrados]
-    QUEUE[[Cola redundante]]
-    DBP[(PostgreSQL primario)]
-    DBS[(PostgreSQL standby)]
-    OBJ[(Objetos: SUI, tickets, backups)]
-  end
-  subgraph OPS[Operación]
-    OTEL[Logs + métricas + trazas]
-    ALERT[Alertas y tableros]
-    CICD[CI/CD + IaC + secretos]
-  end
-  subgraph EXT[Integraciones]
-    SUI[Superservicios / SUI]
-    MSG[Proveedor SMS / WhatsApp]
-  end
+flowchart TD
+    subgraph clientes["Clientes"]
+        usuario(["App Móvil - Usuario Final"])
+        mensajero(["App Móvil - Mensajero"])
+        operador(["Portal Web - Operador"])
+    end
 
-  USERS -->|HTTPS| DNS
-  SCALE --> USERS
-  CACHE --> USERS
-  DNS --> WEB
-  DNS --> GW
-  IDP --> GW
-  GW --> APIA
-  GW --> APIB
-  APIA --> DBP
-  APIB --> DBP
-  APIA --> QUEUE
-  APIB --> QUEUE
-  QUEUE --> WKA
-  QUEUE --> WKB
-  WKA --> OBJ
-  WKB --> OBJ
-  WKA --> SUI
-  WKB --> MSG
-  DBP -. replicación .-> DBS
-  DBP -. PITR .-> OBJ
-  APIA -. telemetría .-> OTEL
-  APIB -. telemetría .-> OTEL
-  WKA -. telemetría .-> OTEL
-  WKB -. telemetría .-> OTEL
-  OTEL --> ALERT
-  CICD -. despliegue .-> APIA
-  CICD -. despliegue .-> APIB
+    subgraph borde["Borde / Global"]
+        lba["Balanceador de Carga A"]
+        lbb["Balanceador de Carga B"]
+        monitor["Servicio de Monitoreo y Alertas"]
+    end
+
+    subgraph bogota["Región Bogotá"]
+        gwbog["API Gateway - Bogotá"]
+        rutasbog["Módulo de Rutas y Paquetes - Bogotá"]
+        dbbog[("Base de Datos - Bogotá")]
+    end
+
+    subgraph medellin["Región Medellín"]
+        gwmed["API Gateway - Medellín"]
+        rutasmed["Módulo de Rutas y Paquetes - Medellín"]
+        dbmed[("Base de Datos - Medellín")]
+    end
+
+    usuario --> lba
+    usuario --> lbb
+    mensajero --> lba
+    mensajero --> lbb
+    operador --> lba
+    operador --> lbb
+    lba --> gwbog
+    lba --> gwmed
+    lbb --> gwbog
+    lbb --> gwmed
+    gwbog --> rutasbog --> dbbog
+    gwmed --> rutasmed --> dbmed
+    dbbog <-.->|distribución| dbmed
+    gwbog -.-> monitor
+    gwmed -.-> monitor
 ```
 
-La vista editable correspondiente es la segunda página, **TO-BE · EcoRecicla**, de [`mapa-final.drawio`](mapa-final.drawio).
+La segunda página de [`mapa-final.drawio`](mapa-final.drawio) contiene esta vista en formato editable.
 
-### Decisiones de diseño
+## 8. Trazabilidad de las mejoras
 
-| Decisión | Justificación | Riesgos tratados |
+| Riesgo original | Cambio propuesto | Resultado esperado según el diagnóstico |
 |---|---|---|
-| Separar SPA estática y API transaccional | Permite versionar/cachar la interfaz y controlar transacciones, validación y permisos en el servidor. | R1, R3 |
-| Ejecutar al menos dos réplicas sin estado en zonas distintas | Evita depender de un único proceso o zona y habilita escalamiento horizontal. | R1, R3 |
-| Usar PostgreSQL primario + standby con failover y PITR | Crea una fuente de verdad, reduce tiempo de recuperación y protege trazabilidad. | R2, R5 |
-| Enviar SUI, consolidaciones y notificaciones a una cola | Aísla tareas largas, permite reintentos/idempotencia y protege la latencia de pesaje. | R4 |
-| Instrumentar logs, métricas y trazas correlacionadas | Permite detectar errores y seguir un pesaje extremo a extremo. | R5 |
-| Mantener artefactos SUI/tickets en objetos versionados | Facilita auditoría, reenvío y retención independiente de la base transaccional. | R2, R4 |
-| Diseñar contingencia de ECA después de una prueba de campo | Evita inventar un modo offline incompatible con la báscula o las reglas de conciliación. | R6 |
+| R1 — balanceador único | Incorporar dos balanceadores capaces de dirigir tráfico a ambas regiones. | La entrada deja de depender de una única instancia. |
+| R2 — escritura única en Bogotá | Distribuir la base de datos entre Bogotá y Medellín, eliminando la concentración de escritura indicada en el mapa original. | Reducir la dependencia de Bogotá y la latencia regional señalada. |
+| R3 — Medellín sin procesamiento propio | Incorporar un módulo de rutas y paquetes en Medellín. | Permitir que el crecimiento de Medellín no sature el módulo de Bogotá. |
 
-### Redundancia y capacidad objetivo
+El servicio de monitoreo y alertas continúa recibiendo información de ambos gateways, tal como lo muestra el caso original.
 
-| Componente crítico | Configuración mínima propuesta | Señal de capacidad/falla |
+## 9. Comparación entre el estado y la propuesta
+
+| Aspecto | Estado diagnosticado | Propuesta de mejora |
 |---|---|---|
-| CDN/WAF/balanceador | Servicio administrado multi-AZ. | Errores 4xx/5xx, latencia de borde, salud de targets. |
-| API EcoRecicla | 2 réplicas mínimas, una por zona; escalamiento horizontal. | Solicitudes/s, CPU/memoria, p95/p99, tasa de error. |
-| Workers | 2 réplicas; escalamiento por profundidad y edad de cola. | Mensajes pendientes, mensaje más antiguo, reintentos, cola muerta. |
-| Cola | Servicio redundante; entrega al menos una vez e idempotencia en consumidor. | Mensajes visibles, DLQ, edad, tasa de consumo. |
-| PostgreSQL | Primario + standby en otra zona; failover probado. | Conexiones, IOPS, bloqueos, lag, almacenamiento, error de failover. |
-| Backups/objetos | Cifrado, versionado, retención y prueba periódica de restauración. | Último backup exitoso, edad del backup, restauración verificada. |
-| Observabilidad | Colector y almacenamiento administrados con alertas fuera del dominio de la app. | Pérdida de señales, retraso de ingestión, alertas sintéticas. |
+| Entrada de tráfico | Un balanceador de carga. | Dos balanceadores conectados con ambas regiones. |
+| Procesamiento Bogotá | Gateway y módulo de rutas local. | Se conserva la capacidad regional. |
+| Procesamiento Medellín | Gateway dependiente del módulo de Bogotá. | Gateway y módulo de rutas local. |
+| Datos | Base distribuida con escritura única en Bogotá. | Capacidad de datos distribuida entre las dos regiones. |
+| Monitoreo | Ambos gateways reportan al servicio de monitoreo. | Se conserva el monitoreo de ambas regiones. |
+| Disponibilidad | Existe un punto único de falla en el borde. | El borde queda redundante. |
+| Rendimiento | La escritura concentrada añade latencia fuera de Bogotá. | La capacidad regional evita esa concentración. |
+| Escalabilidad | Medellín crece a costa de la capacidad de Bogotá. | Cada región dispone de su propio procesamiento. |
 
-### Integridad y operación segura
+## 10. Investigación complementaria basada en el repositorio
 
-- El backend debe validar rol y autorización; ocultar una opción en la interfaz no es un control de acceso.
-- Cada pesaje debe tener identificador idempotente para evitar duplicados en reintentos.
-- Cambios de precios, vehículos, balances y reportes deben producir auditoría inmutable con actor y fecha.
-- Secretos y llaves no deben estar en el repositorio ni en el bundle del navegador.
-- Las comunicaciones deben usar TLS; datos y backups, cifrado en reposo.
-- La generación SUI debe conservar versión, hash, estado de envío y evidencia de respuesta.
+### Infraestructura híbrida
 
-## 6. Trazabilidad riesgo–control–prueba
+El `README.md` caracteriza RedExpress como una infraestructura híbrida compuesta por nube, servidores regionales, centros de distribución físicos y dispositivos móviles. El mapa representa esa combinación separando clientes, componentes globales y regiones. Esta agrupación permite localizar qué recursos afectan a toda la plataforma y cuáles afectan a una región concreta.
 
-| Riesgo | Control propuesto | Verificación de aceptación |
-|---|---|---|
-| R1 | API real, balanceador y réplicas sin estado. | Apagar una réplica durante una prueba y confirmar que un pesaje válido continúa sin error ni duplicado. |
-| R2 | PostgreSQL HA, backups, PITR y auditoría. | Restaurar un backup en ambiente aislado y reconciliar conteos/totales contra el origen. |
-| R3 | Escalamiento horizontal separado para API y workers. | Ejecutar prueba de carga y demostrar que nuevas réplicas reducen saturación sin romper sesiones. |
-| R4 | Cola, workers e idempotencia. | Generar reportes concurrentes mientras se registran pesajes; verificar latencia y reintentos controlados. |
-| R5 | Métricas, logs, trazas, SLO y alertas. | Provocar un error conocido y comprobar alerta, traza correlacionada y procedimiento de respuesta. |
-| R6 | Protocolo contingente o buffer local, sujeto a validación. | Simular pérdida de Internet/báscula en una ECA y reconciliar los registros al recuperar el servicio. |
+### Redundancia y disponibilidad
 
-## 7. Objetivos operativos iniciales por validar
+La guía muestra que identificar un componente no es suficiente: también debe indicarse si tiene redundancia. El balanceador único se clasifica como punto único de falla porque su indisponibilidad bloquea el acceso total. La propuesta responde directamente con redundancia del mismo componente.
 
-Estos valores son hipótesis de diseño para iniciar pruebas con el cliente; no describen niveles actuales ni compromisos contractuales.
+### Rendimiento y distribución de datos
 
-| Indicador | Objetivo inicial | Método de medición |
-|---|---|---|
-| Disponibilidad de registro de pesaje | 99,9 % mensual | Solicitud sintética + tasa de éxito de transacciones. |
-| Latencia de lectura API | p95 menor a 500 ms | Trazas en el gateway y API, sin incluir red del usuario. |
-| Latencia de escritura de pesaje | p95 menor a 800 ms | Traza extremo a extremo hasta confirmación de commit. |
-| Detección de fallo crítico | Menos de 5 minutos | Diferencia entre inicio del incidente y alerta. |
-| RPO | Máximo 15 minutos | Prueba de recuperación y verificación del último punto restaurable. |
-| RTO | Máximo 60 minutos | Simulacro desde declaración hasta servicio validado. |
-| Cola en operación normal | Mensaje más antiguo menor a 2 minutos | Métrica de edad máxima, separada por tipo de trabajo. |
+El material distingue un cuello de botella de un punto único de falla. La escritura única en Bogotá no se describe como caída total, sino como origen de latencia para mensajeros fuera de esa región. La mejora consiste en eliminar la concentración regional de la escritura conservando el concepto de base de datos distribuida incluido en el caso.
 
-## 8. Diferencias frente al caso RedExpress
+### Escalabilidad geográfica
 
-| Dimensión | RedExpress | EcoRecicla |
-|---|---|---|
-| Motor del negocio | Rastreo y logística de paquetes en varias ciudades. | Pesaje, aprovechamiento de materiales, operación de ECA y reporte regulatorio. |
-| Riesgo geográfico principal | Medellín depende del procesamiento de rutas en Bogotá. | La expansión geográfica aún no está evidenciada; primero falta una plataforma productiva persistente. |
-| Dato crítico | Estado y ubicación de paquetes. | Peso, material, reciclador, precio, balance de masas, PQR y evidencia SUI. |
-| Operación física | Mensajeros, centros y servidores regionales. | Operador y báscula en la ECA; cloud para servicios compartidos. |
-| Prioridad | Eliminar balanceador único y dependencia regional. | Crear API/base de datos reales, recuperación y observabilidad; luego escalar por zonas. |
-| Tarea pesada | Procesamiento regional de rutas. | Consolidación, XML/exportación SUI y notificaciones. |
+El gateway de Medellín depende del módulo de Bogotá. Por eso el problema se clasifica como escalabilidad: un aumento de demanda en Medellín también consume la capacidad de Bogotá. Añadir el módulo regional de Medellín elimina esa dependencia sin cambiar la estructura funcional descrita por el repositorio.
 
-Ambos casos comparten la regla esencial del taller: el riesgo debe localizarse en un componente del mapa. La adaptación no copia la topología multirregional de RedExpress; toma su método y lo ajusta a la madurez y criticidad de EcoRecicla.
+Las referencias internas completas están en [`referencias.md`](referencias.md).
 
-## 9. Investigación complementaria aplicada
+## 11. Validación con la checklist del taller
 
-Los principios de confiabilidad de AWS recomiendan recuperación automática, pruebas de recuperación, escalamiento horizontal y automatización de cambios [[1]](referencias.md#referencias). Se aplican proponiendo réplicas en dos zonas, failover probado y despliegues automatizables. La documentación de Kubernetes explica que el HPA ajusta réplicas con métricas de recursos o personalizadas [[2]](referencias.md#referencias); en este caso conviene combinar CPU con solicitudes por segundo para la API y edad/profundidad de cola para workers.
+- [x] Todos los componentes mencionados por el caso están representados.
+- [x] Los componentes están agrupados en Clientes, Borde/Global, Bogotá y Medellín.
+- [x] Las conexiones relevantes tienen dirección.
+- [x] Los tres componentes críticos indican su condición de redundancia o dependencia.
+- [x] Cada riesgo está clasificado como disponibilidad, rendimiento o escalabilidad.
+- [x] Cada riesgo de la tabla tiene un identificador visible en el mapa.
+- [x] La propuesta de mejora responde a los mismos tres hallazgos.
+- [x] No se incorporó información de otros proyectos o clientes.
 
-PostgreSQL documenta las alternativas de standby, failover y replicación, incluida la tensión entre consistencia y latencia [[3]](referencias.md#referencias). Esto sustenta el patrón primario/standby, pero no reemplaza una prueba con la carga real de pesajes. OpenTelemetry plantea logs, métricas y trazas como señales complementarias y recomienda SLI desde la perspectiva del usuario [[4]](referencias.md#referencias). Por ello se propone medir la transacción completa de pesaje y no solamente CPU o disponibilidad de procesos.
+## 12. Limitaciones
 
-La síntesis y los enlaces completos están en [`referencias.md`](referencias.md).
-
-## 10. Plan de implementación recomendado
-
-### Fase 0 — Validación (antes de construir)
-
-- Confirmar sedes, conectividad, modelos de báscula, volumen diario y ventanas pico.
-- Inventariar datos personales/regulatorios, retención y responsables.
-- Acordar los SLO, RTO y RPO propuestos.
-- Seleccionar proveedor/región y revisar residencia de datos, costo y soporte.
-
-### Fase 1 — Fundamento transaccional
-
-- Implementar identidad, RBAC, API, esquema de base de datos y migraciones.
-- Incorporar validación del lado servidor, idempotencia y auditoría.
-- Desplegar un ambiente no productivo con backups desde el inicio.
-
-### Fase 2 — Resiliencia y desacoplamiento
-
-- Distribuir la SPA por CDN y publicar la API detrás de gateway/balanceador.
-- Replicar API y workers en dos zonas.
-- Habilitar standby, failover, PITR, cola y almacenamiento de objetos.
-
-### Fase 3 — Evidencia operativa
-
-- Instrumentar trazas, métricas, logs, tableros y alertas.
-- Ejecutar carga, fallo de una réplica, failover de datos y restauración.
-- Documentar runbooks y responsables de incidentes.
-
-### Fase 4 — Continuidad de la ECA
-
-- Probar conectividad y báscula en campo.
-- Diseñar buffer/offline solo si la evidencia demuestra que es necesario.
-- Definir conciliación, conflictos y controles antifraude antes de habilitar sincronización diferida.
-
-## 11. Supuestos y preguntas abiertas
-
-| Supuesto/pregunta | Estado | Acción requerida |
-|---|---|---|
-| Una región cloud colombiana o cercana satisface requisitos legales y de latencia. | Por validar | Revisión jurídica/técnica y prueba de latencia. |
-| La báscula expone una interfaz integrable o existe captura manual controlada. | Por validar | Inventario de modelos y prueba en la ECA. |
-| SUI admite el mecanismo de entrega representado. | Por validar | Confirmar especificación, credenciales, horarios y acuses. |
-| SMS/WhatsApp es necesario para tickets/notificaciones. | Por validar | Definir consentimiento, proveedor, costo y retención. |
-| Los módulos pueden compartir inicialmente un backend modular. | Propuesto | Revisar límites de dominio; evitar microservicios prematuros. |
-| Un primario PostgreSQL cubre la carga inicial. | Propuesto | Medir TPS, tamaño, consultas y crecimiento; agregar réplicas/partición solo con evidencia. |
-
-## 12. Autoevaluación contra la rúbrica
-
-- [x] El caso base representa clientes, zonas, nodos, servicios y riesgos críticos.
-- [x] El mapa final separa estado actual y objetivo, y declara redundancia.
-- [x] Cada cuello de botella o punto de falla tiene ID, evidencia, impacto y prioridad.
-- [x] La adaptación usa procesos propios de EcoRecicla y no copia la topología de RedExpress.
-- [x] La investigación usa fuentes oficiales y cada práctica se relaciona con una decisión.
-- [x] Los supuestos se distinguen de los hechos y tienen acción de validación.
+El repositorio no aporta mediciones de latencia, volumen de tráfico, capacidad instalada ni resultados de pruebas. Por esa razón el informe conserva las prioridades cualitativas de la guía y no inventa cifras. Tampoco selecciona productos o proveedores concretos: la entrega se limita a los componentes y relaciones definidos para RedExpress.
 
 ## Conclusión
 
-El mayor riesgo de EcoRecicla no es todavía una región saturada, sino intentar operar procesos regulados sobre un prototipo sin persistencia ni frontera transaccional productiva documentadas. La secuencia correcta es construir integridad y recuperabilidad, observar el comportamiento real y, después, escalar. El mapa TO-BE establece un camino verificable: cada control responde a un riesgo identificado y cada riesgo tiene una prueba de aceptación.
+El mapa permite demostrar tres problemas concretos: un punto único de falla en el balanceador, un cuello de botella de escritura en Bogotá y una dependencia de escalabilidad entre Medellín y Bogotá. La propuesta final conserva la arquitectura regional del caso y corrige exactamente esos tres problemas mediante redundancia en el borde, distribución regional de datos y procesamiento de rutas en ambas regiones.
 
 ---
 
-Este documento hace parte de la entrega del Taller 4 del curso AREM — Universidad de La Sabana.
+Este documento forma parte de la entrega del Taller 4 de AREM — Universidad de La Sabana.
