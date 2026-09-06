@@ -8,15 +8,15 @@ Construir el mapa lógico y/o físico de la infraestructura tecnológica del sis
 
 ## ✅ Entrega desarrollada
 
-La aplicación del taller al cliente **EcoRecicla (SIAR)** quedó documentada con trazabilidad entre el mapa, los riesgos y las decisiones de arquitectura:
+La entrega desarrolla exclusivamente el caso **RedExpress** descrito en este repositorio, con trazabilidad entre el mapa, los riesgos y las oportunidades de mejora:
 
 - [Notas y diagnóstico del caso base RedExpress](clase/notas.md)
 - [Mapa borrador editable de RedExpress](clase/mapa-borrador.drawio)
-- [Mapa final editable de EcoRecicla, con vistas AS-IS y TO-BE](entrega/mapa-final.drawio)
+- [Mapa final editable de RedExpress, con estado diagnosticado y propuesta de mejora](entrega/mapa-final.drawio)
 - [Informe técnico y vista previa del mapa](entrega/informe.md)
 - [Investigación y referencias técnicas](entrega/referencias.md)
 
-El informe distingue la infraestructura observada/documentada de la infraestructura propuesta. Los servicios cloud del mapa TO-BE son patrones tecnológicos neutrales y no se presentan como recursos ya desplegados.
+El informe, los mapas y las referencias usan únicamente información contenida en este repositorio. La propuesta final se limita a corregir los tres riesgos que identifica la guía del taller.
 
 ---
 
