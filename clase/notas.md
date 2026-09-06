@@ -2,15 +2,15 @@
 
 ## Fecha de la sesión
 
-6 de septiembre de 2026.
+No especificada en los archivos fuente del repositorio.
 
 ## Integrantes presentes
 
-- Martin Ortega (`m4rtin24`).
+- No especificados en los archivos fuente del repositorio.
 
 ## Objetivo de la sesión
 
-Aplicar la metodología de cinco pasos al caso base RedExpress para construir un mapa de infraestructura que permita diagnosticar, con evidencia visual, riesgos de disponibilidad, rendimiento y escalabilidad. El resultado de clase sirve como patrón para la adaptación posterior a EcoRecicla.
+Aplicar la metodología de cinco pasos al caso RedExpress para construir un mapa de infraestructura que permita diagnosticar, con evidencia visual, riesgos de disponibilidad, rendimiento y escalabilidad.
 
 ## Actividades realizadas
 
@@ -84,11 +84,10 @@ No se suministró retroalimentación docente en el repositorio. Como control int
 
 | Tarea | Responsable | Estado |
 |---|---|---|
-| Completar el mapa editable del caso base | Martin Ortega | Completada |
-| Adaptar la metodología a EcoRecicla | Martin Ortega | Completada |
-| Elaborar vistas AS-IS y TO-BE | Martin Ortega | Completada |
-| Redactar diagnóstico e investigación | Martin Ortega | Completada |
-| Validar los supuestos con el cliente antes de desplegar | Equipo del proyecto / cliente | Pendiente fuera del alcance del taller |
+| Completar el mapa editable del caso RedExpress | Equipo responsable | Completada |
+| Elaborar la propuesta de mejora | Equipo responsable | Completada |
+| Redactar diagnóstico e investigación interna | Equipo responsable | Completada |
+| Validar el mapa contra la checklist del repositorio | Equipo responsable | Completada |
 
 ## Autoevaluación
 
