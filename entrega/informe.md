@@ -4,7 +4,7 @@
 
 - **Taller:** Taller 4 — Mapa de Infraestructura y Diagnóstico Técnico.
 - **Sistema analizado:** RedExpress.
-- **Integrantes:** no especificados en los archivos fuente del repositorio.
+- **Integrantes:** Martin Ortega, Alejandro Riveros, Juan Pablo Luna.
 - **Modelo editable:** [`mapa-final.drawio`](mapa-final.drawio).
 - **Trabajo de clase:** [`../clase/mapa-borrador.drawio`](../clase/mapa-borrador.drawio) y [`../clase/notas.md`](../clase/notas.md).
 
