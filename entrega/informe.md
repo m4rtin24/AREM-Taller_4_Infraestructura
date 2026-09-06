@@ -3,23 +3,12 @@
 ## Identificación
 
 - **Taller:** Taller 4 — Mapa de Infraestructura y Diagnóstico Técnico.
-- **Sistema analizado:** RedExpress, plataforma de logística descrita en el repositorio.
+- **Sistema analizado:** RedExpress.
 - **Integrantes:** no especificados en los archivos fuente del repositorio.
 - **Modelo editable:** [`mapa-final.drawio`](mapa-final.drawio).
 - **Trabajo de clase:** [`../clase/mapa-borrador.drawio`](../clase/mapa-borrador.drawio) y [`../clase/notas.md`](../clase/notas.md).
 
-## 1. Fuentes y límite del análisis
-
-Este informe usa exclusivamente el contenido de los siguientes archivos del repositorio:
-
-1. [`../README.md`](../README.md), que define el objetivo, el caso RedExpress, los componentes esperados, las áreas críticas y los entregables.
-2. [`../clase/guia_paso_a_paso_infraestructura.md`](../clase/guia_paso_a_paso_infraestructura.md), que contiene la notación, la metodología, el mapa construido por pasos, el diagnóstico, los errores comunes y la checklist.
-3. [`../clase/visualizacion-infraestructura.html`](../clase/visualizacion-infraestructura.html), que presenta la misma infraestructura y los tres riesgos en una vista interactiva.
-4. Las plantillas de `plantillas/`, usadas únicamente para organizar la entrega.
-
-No se incorporan otros clientes, dominios, tecnologías, proveedores, métricas, integrantes ni fechas. Cuando el informe presenta una mejora, esta se deriva directamente del riesgo descrito por el material del repositorio.
-
-## 2. Descripción general
+## 1. Descripción general
 
 RedExpress gestiona paquetes y rastreo de envíos mediante una aplicación móvil y una plataforma web. Su infraestructura es híbrida e incluye servicios en la nube, servidores regionales, centros de distribución físicos y dispositivos móviles utilizados por mensajeros. El sistema debe conservar disponibilidad y rendimiento durante campañas promocionales o temporadas de alto volumen como Navidad.
 
@@ -30,7 +19,7 @@ El mapa del repositorio organiza la infraestructura en cuatro zonas:
 - **Región Bogotá:** API Gateway y módulo de procesamiento de rutas y paquetes.
 - **Región Medellín:** API Gateway sin módulo local de procesamiento de rutas.
 
-## 3. Proceso de desarrollo
+## 2. Proceso de desarrollo
 
 Se aplicaron los cinco pasos definidos en la guía:
 
@@ -42,7 +31,7 @@ Se aplicaron los cinco pasos definidos en la guía:
 
 El archivo final contiene dos páginas: **Estado diagnosticado**, que representa la situación descrita, y **Propuesta de mejora**, que elimina los tres riesgos mediante redundancia y capacidad regional.
 
-## 4. Mapa del estado diagnosticado
+## 3. Mapa del estado diagnosticado
 
 ```mermaid
 flowchart TD
@@ -81,7 +70,7 @@ flowchart TD
 
 La primera página de [`mapa-final.drawio`](mapa-final.drawio) contiene esta vista en formato editable.
 
-## 5. Inventario de componentes
+## 4. Inventario de componentes
 
 | Componente | Tipo de elemento | Zona | Función descrita | Condición relevante |
 |---|---|---|---|---|
@@ -95,7 +84,7 @@ La primera página de [`mapa-final.drawio`](mapa-final.drawio) contiene esta vis
 | Base de datos distribuida | Base de datos | Borde / Global | Almacenar la información de la plataforma. | Escritura única en Bogotá. |
 | Monitoreo y alertas | Servicio | Borde / Global | Recibir información de los gateways regionales. | Servicio compartido. |
 
-## 6. Diagnóstico técnico priorizado
+## 5. Diagnóstico técnico priorizado
 
 | ID | Componente exacto del mapa | Riesgo diagnosticado | Categoría | Impacto si ocurre | Prioridad |
 |---|---|---|---|---|---|
@@ -109,7 +98,7 @@ La primera página de [`mapa-final.drawio`](mapa-final.drawio) contiene esta vis
 - `R2` aparece sobre la base de datos y demuestra que la escritura se concentra en Bogotá.
 - `R3` aparece sobre el gateway de Medellín; su conexión hacia el módulo de Bogotá muestra la dependencia regional.
 
-## 7. Propuesta de mejora
+## 6. Propuesta de mejora
 
 La propuesta conserva los mismos tipos de componentes del caso y modifica únicamente la redundancia y la distribución regional que originan los riesgos.
 
@@ -158,7 +147,7 @@ flowchart TD
 
 La segunda página de [`mapa-final.drawio`](mapa-final.drawio) contiene esta vista en formato editable.
 
-## 8. Trazabilidad de las mejoras
+## 7. Trazabilidad de las mejoras
 
 | Riesgo original | Cambio propuesto | Resultado esperado según el diagnóstico |
 |---|---|---|
@@ -168,7 +157,7 @@ La segunda página de [`mapa-final.drawio`](mapa-final.drawio) contiene esta vis
 
 El servicio de monitoreo y alertas continúa recibiendo información de ambos gateways, tal como lo muestra el caso original.
 
-## 9. Comparación entre el estado y la propuesta
+## 8. Comparación entre el estado y la propuesta
 
 | Aspecto | Estado diagnosticado | Propuesta de mejora |
 |---|---|---|
@@ -181,7 +170,7 @@ El servicio de monitoreo y alertas continúa recibiendo información de ambos ga
 | Rendimiento | La escritura concentrada añade latencia fuera de Bogotá. | La capacidad regional evita esa concentración. |
 | Escalabilidad | Medellín crece a costa de la capacidad de Bogotá. | Cada región dispone de su propio procesamiento. |
 
-## 10. Investigación complementaria basada en el repositorio
+## 9. Investigación complementaria basada en el repositorio
 
 ### Infraestructura híbrida
 
@@ -201,7 +190,7 @@ El gateway de Medellín depende del módulo de Bogotá. Por eso el problema se c
 
 Las referencias internas completas están en [`referencias.md`](referencias.md).
 
-## 11. Validación con la checklist del taller
+## 10. Validación con la checklist del taller
 
 - [x] Todos los componentes mencionados por el caso están representados.
 - [x] Los componentes están agrupados en Clientes, Borde/Global, Bogotá y Medellín.
@@ -212,7 +201,7 @@ Las referencias internas completas están en [`referencias.md`](referencias.md).
 - [x] La propuesta de mejora responde a los mismos tres hallazgos.
 - [x] No se incorporó información de otros proyectos o clientes.
 
-## 12. Limitaciones
+## 11. Limitaciones
 
 El repositorio no aporta mediciones de latencia, volumen de tráfico, capacidad instalada ni resultados de pruebas. Por esa razón el informe conserva las prioridades cualitativas de la guía y no inventa cifras. Tampoco selecciona productos o proveedores concretos: la entrega se limita a los componentes y relaciones definidos para RedExpress.
 
