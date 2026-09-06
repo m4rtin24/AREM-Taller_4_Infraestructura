@@ -6,7 +6,6 @@
 - **Sistema analizado:** RedExpress.
 - **Integrantes:** Martin Ortega, Alejandro Riveros, Juan Pablo Luna.
 - **Modelo editable:** [`mapa-final.drawio`](mapa-final.drawio).
-- **Trabajo de clase:** [`../clase/mapa-borrador.drawio`](../clase/mapa-borrador.drawio) y [`../clase/notas.md`](../clase/notas.md).
 
 ## 1. Descripción general
 
